@@ -7,11 +7,15 @@ const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const productRoutes = require('./routes/productRoutes');
 
+const setupSwagger = require('./swagger');
+
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+setupSwagger(app);
 
 // Routes 
 app.use('/api/users', userRoutes);
