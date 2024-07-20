@@ -128,7 +128,7 @@ function App() {
                   >
                     Admin Dashboard
                   </Button>
-                  <Button color="inherit" component={Link} to="/admin/products">
+                  {/* <Button color="inherit" component={Link} to="/admin/products">
                     Admin Products
                   </Button>
                   <Button color="inherit" component={Link} to="/admin/orders">
@@ -136,7 +136,7 @@ function App() {
                   </Button>
                   <Button color="inherit" component={Link} to="/admin/users">
                     Admin Users
-                  </Button>
+                  </Button> */}
                 </>
               )}
               <Button color="inherit" onClick={handleLogout}>

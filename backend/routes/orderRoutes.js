@@ -3,6 +3,7 @@ const router = express.Router();
 const Order = require("../models/Order");
 const auth = require("../middleware/authMiddleware");
 const admin = require("../middleware/adminMiddleware");
+const orderController = require("../controllers/orderController");
 
 /**
  * @swagger
@@ -45,12 +46,7 @@ const admin = require("../middleware/adminMiddleware");
  *       401:
  *         description: Unauthorized
  */
-router.post("/", auth, async (req, res) => {
-  const { orderItems, totalPrice } = req.body;
-  const order = new Order({ user: req.user._id, orderItems, totalPrice });
-  const createdOrder = await order.save();
-  res.status(201).send(createdOrder);
-});
+router.post("/", auth, orderController.createOrder);
 
 /**
  * @swagger
@@ -66,15 +62,7 @@ router.post("/", auth, async (req, res) => {
  *       401:
  *         description: Unauthorized
  */
-router.get("/", auth, async (req, res) => {
-  let orders;
-  if (req.user.isAdmin) {
-    orders = await Order.find().populate("user", "name email");
-  } else {
-    orders = await Order.find({ user: req.user._id });
-  }
-  res.send(orders);
-});
+router.get("/", auth, orderController.getOrders);
 
 /**
  * @swagger
@@ -96,7 +84,7 @@ router.get("/", auth, async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Order'
+ *              $ref: '#/components/schemas/Order'
  *     responses:
  *       200:
  *         description: Order updated successfully
@@ -105,13 +93,7 @@ router.get("/", auth, async (req, res) => {
  *       401:
  *         description: Unauthorized
  */
-router.put("/:id", auth, admin, async (req, res) => {
-  const order = await Order.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  if (!order) return res.status(404).send("Order not found");
-  res.send(order);
-});
+router.put("/:id", auth, admin, orderController.updateOrder);
 
 /**
  * @swagger
@@ -136,10 +118,6 @@ router.put("/:id", auth, admin, async (req, res) => {
  *       401:
  *         description: Unauthorized
  */
-router.delete("/:id", auth, admin, async (req, res) => {
-  const order = await Order.findByIdAndDelete(req.params.id);
-  if (!order) return res.status(404).send("Order not found");
-  res.send({ message: "Order deleted" });
-});
+router.delete("/:id", auth, admin, orderController.deleteOrder);
 
 module.exports = router;

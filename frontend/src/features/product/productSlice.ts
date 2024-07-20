@@ -24,6 +24,39 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
+export const addProduct = createAsyncThunk(
+  "products/addProduct",
+  async (newProduct: Omit<Product, "_id">) => {
+    const response = await axios.post(
+      "http://localhost:5000/api/products",
+      newProduct,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  }
+);
+
+export const updateProduct = createAsyncThunk(
+  "product/updateProduct",
+  async ({ id, updates }: { id: string; updates: Partial<Product> }) => {
+    const response = await axios.put(
+      `http://localhost:5000/api/products/${id}`,
+      updates,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    return response.data;
+  }
+);
+
+
 export const addReview = createAsyncThunk(
   "product/addReview",
   async ({ productId, review }: { productId: string; review: Review }) => {
@@ -43,16 +76,6 @@ export const addReview = createAsyncThunk(
 );
 
 
-// export const addReview = createAsyncThunk(
-//   "product/addReview",
-//   async ({ productId, review }: { productId: string; review: Review }) => {
-//     const { data } = await axios.post(
-//       `http://localhost:5000/api/products/${productId}/reviews`,
-//       review
-//     );
-//     return data;
-//   }
-// );
 
 export const productSlice = createSlice({
   name: "product",
@@ -78,14 +101,23 @@ export const productSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message ?? null;
       })
-      .addCase(addReview.fulfilled, (state, action: PayloadAction<Product>) => {
-        const index = state.items.findIndex(
-          (item) => item._id === action.payload._id
-        );
-        if (index !== -1) {
-          state.items[index] = action.payload;
+      .addCase(
+        addProduct.fulfilled,
+        (state, action: PayloadAction<Product>) => {
+          state.items.push(action.payload);
         }
-      });
+      )
+      .addCase(
+        updateProduct.fulfilled,
+        (state, action: PayloadAction<Product>) => {
+          const index = state.items.findIndex(
+            (product) => product._id === action.payload._id
+          );
+          if (index !== -1) {
+            state.items[index] = action.payload;
+          }
+        }
+      );
   },
 });
 

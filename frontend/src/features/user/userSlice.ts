@@ -45,10 +45,20 @@ export const userSlice = createSlice({
       state.isAuthenticated = false;
       state.dataLoaded = false;
     },
+    updateUser(state, action: PayloadAction<User>) {
+      if (state.user && state.user._id === action.payload._id) {
+        state.user = action.payload;
+      }
+    },
+    deleteUser(state, action: PayloadAction<string>) {
+      if (state.user && state.user._id === action.payload) {
+        state.user = null;
+      }
+    },
   },
 });
 
-export const { setUser, setUserLoading, setUserError, clearUser } =
+export const { setUser, setUserLoading, setUserError, clearUser, updateUser, deleteUser} =
   userSlice.actions;
 
 export const selectUser = (state: RootState) => state.user.user;

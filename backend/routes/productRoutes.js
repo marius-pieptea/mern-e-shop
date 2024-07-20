@@ -3,6 +3,7 @@ const router = express.Router();
 const Product = require("../models/Product");
 const auth = require("../middleware/authMiddleware");
 const admin = require("../middleware/adminMiddleware");
+const productController = require("../controllers/productController");
 
 /**
  * @swagger
@@ -67,18 +68,7 @@ const admin = require("../middleware/adminMiddleware");
  *       200:
  *         description: List of products
  */
-router.get("/", async (req, res) => {
-  const { category, minPrice, maxPrice, search } = req.query;
-  let query = {};
-
-  if (category) query.category = category;
-  if (minPrice) query.price = { $gte: minPrice };
-  if (maxPrice) query.price = { ...query.price, $lte: maxPrice };
-  if (search) query.name = { $regex: search, $options: "i" };
-
-  const products = await Product.find(query);
-  res.send(products);
-});
+router.get("/", productController.getProducts);
 
 /**
  * @swagger
@@ -100,11 +90,7 @@ router.get("/", async (req, res) => {
  *       401:
  *         description: Unauthorized
  */
-router.post("/", auth, admin, async (req, res) => {
-  const product = new Product(req.body);
-  await product.save();
-  res.send(product);
-});
+router.post("/", auth, admin, productController.createProduct);
 
 /**
  * @swagger
@@ -125,11 +111,7 @@ router.post("/", auth, admin, async (req, res) => {
  *       404:
  *         description: Product not found
  */
-router.get("/:id", async (req, res) => {
-  const product = await Product.findById(req.params.id).populate('reviews.user', 'name');
-  if (!product) return res.status(404).send("Product not found");
-  res.send(product);
-});
+router.get("/:id", productController.getProductById);
 
 /**
  * @swagger
@@ -146,6 +128,12 @@ router.get("/:id", async (req, res) => {
  *           type: string
  *         required: true
  *         description: Product ID
+ *       - in: 
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Bearer token for authentication
  *     requestBody:
  *       required: true
  *       content:
@@ -160,13 +148,7 @@ router.get("/:id", async (req, res) => {
  *       401:
  *         description: Unauthorized
  */
-router.put("/:id", auth, admin, async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  if (!product) return res.status(404).send("Product not found");
-  res.send(product);
-});
+router.put("/:id", auth, admin, productController.updateProduct);
 
 /**
  * @swagger
@@ -191,11 +173,7 @@ router.put("/:id", auth, admin, async (req, res) => {
  *       401:
  *         description: Unauthorized
  */
-router.delete("/:id", auth, admin, async (req, res) => {
-  const product = await Product.findByIdAndDelete(req.params.id);
-  if (!product) return res.status(404).send("Product not found");
-  res.send({ message: "Product deleted" });
-});
+router.delete("/:id", auth, admin, productController.deleteProduct);
 
 /**
  * @swagger
@@ -212,6 +190,12 @@ router.delete("/:id", auth, admin, async (req, res) => {
  *           type: string
  *         required: true
  *         description: Product ID
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Bearer token for authentication
  *     requestBody:
  *       required: true
  *       content:
@@ -226,33 +210,13 @@ router.delete("/:id", auth, admin, async (req, res) => {
  *     responses:
  *       201:
  *         description: Review added successfully
- *       404:
- *         description: Product not found
+ *       400:
+ *         description: Bad request
  *       401:
  *         description: Unauthorized
+ *       404:
+ *         description: Product not found
  */
-router.post("/:id/reviews", auth, async (req, res) => {
-  const { rating, comment } = req.body;
-  const productId = req.params.id;
-
-  try {
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).send("Product not found");
-    }
-
-    const review = {
-      user: req.user._id, // Ensure this is an ObjectId
-      rating,
-      comment,
-    };
-
-    product.reviews.push(review);
-    await product.save();
-    res.status(201).send(product);
-  } catch (error) {
-    res.status(400).send(error.message);
-  }
-});
+router.post("/:id/reviews", auth, productController.addReview);
 
 module.exports = router;

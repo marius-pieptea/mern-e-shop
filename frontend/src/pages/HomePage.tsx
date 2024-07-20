@@ -72,6 +72,7 @@ const HomePage: React.FC = () => {
             <MenuItem value="">All</MenuItem>
             <MenuItem value="Category1">Category1</MenuItem>
             <MenuItem value="Category2">Category2</MenuItem>
+            <MenuItem value="Category3">Category3</MenuItem>
           </TextField>
           <TextField
             label="Min Price"
