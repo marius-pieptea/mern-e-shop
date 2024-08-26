@@ -4,15 +4,27 @@
 
 E-Shop is a full-stack e-commerce application built using the MERN stack (MongoDB, Express, React, Node.js). This project serves as a minimal setup template for React with Vite, providing a modern frontend build tool with Hot Module Replacement (HMR) and some ESLint rules. The backend is powered by Express and MongoDB, with JWT-based authentication and other essential features.
 
+## Live Demo
+
+[Check out the live demo here](https://mern-e-shop-frontend.vercel.app/)
+
 ## Table of Contents
 
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Getting Started](#getting-started)
-- [Backend Setup](#backend-setup)
-- [Frontend Setup](#frontend-setup)
-- [Scripts](#scripts)
-- [License](#license)
+- [E-Shop MERN Stack Application](#e-shop-mern-stack-application)
+  - [Project Overview](#project-overview)
+  - [Live Demo](#live-demo)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Technologies Used](#technologies-used)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
+  - [Getting Started](#getting-started)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+  - [Scripts](#scripts)
+    - [Backend](#backend-1)
+    - [Frontend](#frontend-1)
+  - [License](#license)
 
 ## Features
 
