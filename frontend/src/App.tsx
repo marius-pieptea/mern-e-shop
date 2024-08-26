@@ -1,4 +1,4 @@
-import React, { useEffect, ReactElement } from "react";
+import React, { useEffect, ReactElement, useState } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -62,6 +62,7 @@ function App() {
   const dataLoaded = useSelector((state: RootState) => state.user.dataLoaded);
   const cartItems = useSelector((state: RootState) => state.cart.cartItems);
   const dispatch: AppDispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -71,7 +72,14 @@ function App() {
         dispatch(setUser(user));
       }
     }
+    setLoading(false);
   }, [dispatch, dataLoaded]);
+
+  useEffect(() => {
+    if (!dataLoaded) {
+      dispatch({ type: "SET_DATA_LOADED", payload: true });
+    }
+  }, [dataLoaded, dispatch]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -92,9 +100,13 @@ function App() {
     0
   );
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Router>
-      <AppBar position="fixed">
+      <AppBar position="fixed" sx={{ backgroundColor: "#4a89dc" }}>
         <Toolbar>
           <Button color="inherit" component={Link} to="/">
             Home
@@ -128,15 +140,6 @@ function App() {
                   >
                     Admin Dashboard
                   </Button>
-                  {/* <Button color="inherit" component={Link} to="/admin/products">
-                    Admin Products
-                  </Button>
-                  <Button color="inherit" component={Link} to="/admin/orders">
-                    Admin Orders
-                  </Button>
-                  <Button color="inherit" component={Link} to="/admin/users">
-                    Admin Users
-                  </Button> */}
                 </>
               )}
               <Button color="inherit" onClick={handleLogout}>

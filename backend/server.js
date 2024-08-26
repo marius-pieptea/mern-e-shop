@@ -8,6 +8,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const productRoutes = require('./routes/productRoutes');
 
 const setupSwagger = require('./swagger');
+const setupInMemoryDB = require('./setupInMemoryDb'); // Adjust the path as necessary
 
 dotenv.config();
 
@@ -25,12 +26,20 @@ app.use('/api/products', productRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected...'))
-.catch((err) => console.error(err));
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("Connected to MongoDB");
+  } catch (error) {
+    console.error(
+      "Failed to connect to MongoDB, setting up in-memory MongoDB",
+      error
+    );
+    await setupInMemoryDB();
+  }
+};
+
+connectDB();
 
 app.get('/', (req, res) => {
     res.send('API is running...');    

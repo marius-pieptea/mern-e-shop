@@ -21,7 +21,7 @@ const PaymentInfo: React.FC = () => {
     cardNumber: "",
     expiryDate: "",
     cvv: "",
-    method: "creditCard", // Default method
+    method: "creditCard", 
   });
   const dispatch = useDispatch();
 

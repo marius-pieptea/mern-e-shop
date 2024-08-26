@@ -1,4 +1,3 @@
-// src/components/ShippingInfo.tsx
 import React, { useState, ChangeEvent } from "react";
 import { useDispatch } from "react-redux";
 import {

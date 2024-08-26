@@ -1,4 +1,3 @@
-// src/pages/AdminDashboard.tsx
 import React from "react";
 import { Link } from "react-router-dom";
 import { Container, Typography, Button } from "@mui/material";

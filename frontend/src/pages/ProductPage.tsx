@@ -13,9 +13,14 @@ import {
   Button,
   Box,
   TextField,
+  CircularProgress,
+  Grid,
+  Divider,
+  Rating,
 } from "@mui/material";
 import { AppDispatch, RootState } from "../store";
 import { Product, Review } from "../types";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 
 const ProductPage: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
@@ -51,115 +56,132 @@ const ProductPage: React.FC = () => {
     dispatch(addToCart(cartItem));
   };
 
-  const handleAddReview = () => {
-    console.log("handleAddReview called");
-    if (!isAuthenticated) {
-      alert("You need to be logged in to add a review.");
-      return;
-    }
+ const handleAddReview = async () => {
+   if (!isAuthenticated || !user) {
+     alert("You need to be logged in to add a review.");
+     return;
+   }
 
-    if (!user) {
-      alert("User information is missing.");
-      return;
-    }
+   const review: Review = {
+     rating,
+     comment,
+     user: {
+       _id: user._id,
+       name: user.name,
+     },
+     _id: "",
+   };
 
-    const review: Review = {
-      rating,
-      comment,
-      user: {
-        _id: user._id,
-        name: user.name,
-      },
-      _id: "",
-    };
+   try {
+     const updatedProduct = await dispatch(
+       addReview({ productId: id!, review })
+     ).unwrap();
 
-    dispatch(addReview({ productId: id!, review }));
-  };
+     const newReview = {
+       ...review,
+       _id: updatedProduct.reviews[updatedProduct.reviews.length - 1]._id,
+     };
+
+     setProduct({
+       ...updatedProduct,
+       reviews: [...updatedProduct.reviews.slice(0, -1), newReview],
+     });
+     setRating(0);
+     setComment("");
+   } catch (error) {
+     console.error("Failed to add review:", error);
+     alert("Failed to add review. Please try again.");
+   }
+ };
 
   if (!product) {
     return (
       <Container>
-        <Box mt={4}>
-          <Typography variant="h4" gutterBottom>
-            Loading...
-          </Typography>
+        <Box mt={4} display="flex" justifyContent="center">
+          <CircularProgress />
         </Box>
       </Container>
     );
   }
 
   return (
-    <Container>
+    <Container maxWidth="lg">
       <Box mt={4}>
-        <Typography variant="h4" gutterBottom>
-          {product.name}
-        </Typography>
-        <Card>
-          <CardMedia
-            component="img"
-            height="300"
-            image={product.image}
-            alt={product.name}
-          />
-          <CardContent>
-            <Typography gutterBottom variant="h5" component="div">
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={6}>
+            <Card elevation={0}>
+              <CardMedia
+                component="img"
+                height="400"
+                image={product.image}
+                alt={product.name}
+                sx={{ objectFit: "contain" }}
+              />
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="h4" gutterBottom>
               {product.name}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {product.description}
+            <Typography variant="h5" color="primary" gutterBottom>
+              ${product.price.toFixed(2)}
             </Typography>
-            <Typography variant="h6" color="text.primary">
-              ${product.price}
+            <Typography variant="body1" paragraph>
+              {product.description}
             </Typography>
             <Button
               variant="contained"
               color="primary"
+              size="large"
+              startIcon={<AddShoppingCartIcon />}
               onClick={() => handleAddToCart(product)}
+              fullWidth
             >
               Add to Cart
             </Button>
-          </CardContent>
-        </Card>
-        <Box mt={4}>
+          </Grid>
+        </Grid>
+
+        <Box mt={6}>
           <Typography variant="h5" gutterBottom>
-            Reviews
+            Customer Reviews
           </Typography>
+          <Divider />
           {product.reviews.map((review) => (
-            <Box key={review._id} mb={2}>
+            <Box key={review._id} my={2}>
+              <Rating value={review.rating} readOnly size="small" />
               <Typography variant="body1">{review.comment}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Rating: {review.rating}
+                By {review.user?.name || "Anonymous"}
               </Typography>
-              {review.user && (
-                <Typography variant="body2" color="text.secondary">
-                  Written by: {review.user.name}{" "}
-                </Typography>
-              )}
             </Box>
           ))}
-          <Box mt={4}>
-            <Typography variant="h5" gutterBottom>
-              Add a Review
-            </Typography>
-            <TextField
-              label="Rating"
-              type="number"
+        </Box>
+
+        <Box mt={4}>
+          <Typography variant="h5" gutterBottom>
+            Write a Review
+          </Typography>
+          <Divider />
+          <Box mt={2}>
+            <Rating
               value={rating}
-              onChange={(e) => setRating(Number(e.target.value))}
-              fullWidth
+              onChange={(_, newValue) => setRating(newValue || 0)}
             />
             <TextField
-              label="Comment"
+              label="Your review"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               fullWidth
               multiline
               rows={4}
+              margin="normal"
             />
             <Button
               variant="contained"
               color="primary"
               onClick={handleAddReview}
+              disabled={!isAuthenticated}
             >
               Submit Review
             </Button>

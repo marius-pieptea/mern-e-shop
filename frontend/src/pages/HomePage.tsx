@@ -14,10 +14,12 @@ import {
   Box,
   TextField,
   MenuItem,
+  CardActions,
 } from "@mui/material";
 import _ from "lodash";
 import { AppDispatch, RootState } from "../store";
 import { Product } from "../types";
+import { useNavigate } from "react-router-dom";
 
 const HomePage: React.FC = () => {
   const [search, setSearch] = useState<string>("");
@@ -27,6 +29,12 @@ const HomePage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const products = useSelector((state: RootState) => state.product.items);
   const error = useSelector((state: RootState) => state.product.error);
+   const navigate = useNavigate();
+   const isAuthenticated = useSelector(
+     (state: RootState) => state.user.isAuthenticated
+   );
+  const user = useSelector((state: RootState) => state.user.user);
+
 
   useEffect(() => {
     dispatch(fetchProducts({}));
@@ -44,51 +52,82 @@ const HomePage: React.FC = () => {
     );
   });
 
-  const handleAddToCart = (product: Product) => {
-    const cartItem = { ...product, quantity: 1 }; // Add a default quantity of 1
-    dispatch(addToCart(cartItem));
-  };
+   const handleAddToCart = (product: Product) => {
+     if (!isAuthenticated) {
+       navigate("/login");
+     } else if (user && user.isAdmin) {
+       alert(
+         "Only normal users can order. Please login to your normal user account."
+       );
+     } else {
+       const cartItem = { ...product, quantity: 1 };
+       dispatch(addToCart(cartItem));
+     }
+   };
 
   return (
-    <Container>
-      <Box mt={4}>
-        <Typography variant="h4" gutterBottom>
-          Home Page
+    <Container maxWidth="lg">
+      <Box my={4}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Products
         </Typography>
-        <Box mb={4}>
-          <TextField
-            label="Search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            select
-            fullWidth
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Category1">Category1</MenuItem>
-            <MenuItem value="Category2">Category2</MenuItem>
-            <MenuItem value="Category3">Category3</MenuItem>
-          </TextField>
-          <TextField
-            label="Min Price"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Max Price"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-            fullWidth
-          />
+        <Box
+          position="sticky"
+          top={0}
+          zIndex={1}
+          bgcolor="background.paper"
+          p={2}
+          mb={2}
+        >
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                label="Search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                label="Category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                select
+                fullWidth
+                variant="outlined"
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="Category1">Laptops</MenuItem>
+                <MenuItem value="Category2">Phones</MenuItem>
+                <MenuItem value="Category3">Desktops</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                label="Min Price"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                fullWidth
+                variant="outlined"
+                type="number"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                label="Max Price"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                fullWidth
+                variant="outlined"
+                type="number"
+              />
+            </Grid>
+          </Grid>
         </Box>
         {error && (
-          <Typography variant="body1" color="error">
+          <Typography variant="body1" color="error" mb={2}>
             {error}
           </Typography>
         )}
@@ -98,28 +137,36 @@ const HomePage: React.FC = () => {
               <Card>
                 <CardMedia
                   component="img"
-                  height="140"
+                  height="200"
                   image={product.image}
                   alt={product.name}
                 />
                 <CardContent>
-                  <Typography gutterBottom variant="h5" component="div">
-                    <Link to={`/product/${product._id}`}>{product.name}</Link>
+                  <Typography gutterBottom variant="h6" component="div">
+                    <Link
+                      to={`/product/${product._id}`}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      {product.name}
+                    </Link>
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" noWrap>
                     {product.description}
                   </Typography>
-                  <Typography variant="h6" color="text.primary">
-                    ${product.price}
+                  <Typography variant="h6" color="primary" mt={1}>
+                    ${product.price.toFixed(2)}
                   </Typography>
+                </CardContent>
+                <CardActions>
                   <Button
                     variant="contained"
                     color="primary"
+                    fullWidth
                     onClick={() => handleAddToCart(product)}
                   >
                     Add to Cart
                   </Button>
-                </CardContent>
+                </CardActions>
               </Card>
             </Grid>
           ))}
