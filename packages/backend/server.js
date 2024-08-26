@@ -36,11 +36,11 @@ const connectDB = async (retries = 5, delay = 5000) => {
     } catch (error) {
       console.error("Failed to setup in-memory database", error);
       retries -= 1;
-      console.log(`Retries left: ${retries}`);
       if (retries === 0) {
-        console.error("Exhausted all retries. Exiting...");
-        process.exit(1);
+        console.error("Exhausted all retries. Skipping database setup.");
+        break;
       }
+      console.log(`Retries left: ${retries}`);
       console.log(`Retrying in ${delay / 1000} seconds...`);
       await new Promise((res) => setTimeout(res, delay));
     }
